@@ -63,7 +63,6 @@ const createPlace = (req, res, next) => {
         address: address,
         creator: creator
     };
-    console.log(createdPlace)
 
     DUMMY_PLACES.push(createdPlace);//unshift(createdPlace) for add to first position
 
