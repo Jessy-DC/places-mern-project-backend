@@ -2,6 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const { validationResult } = require('express-validator')
 
 const HttpError = require('../models/http-error')
+const User = require('../models/user');
 
 const DUMMY_USERS = [
     {
@@ -16,32 +17,60 @@ const getUsers = (req, res, next) => {
     res.json({users: DUMMY_USERS});
 }
 
-const createUser = (req, res, next) => {
+const createUser = async (req, res, next) => {
     const errors = validationResult(req);
 
     if(!errors.isEmpty()) {
         console.log(errors);
-        return res.status(422).json({message: 'Invalid inputs passed, please, check your data'})
+        return next(
+            new HttpError(
+                'Invalid inputs passed, please, check your data',
+                422
+            )
+        );
     }
 
-    const {name, email, password} = req.body;
+    const {name, email, password, places} = req.body;
 
-    const hasUser = DUMMY_USERS.find(u => u.email === email)
+    let existingUser;
 
-    if(hasUser) {
-        throw new HttpError('Could not create user, email already exist.', 422)
+    try {
+        existingUser = await User.findOne({email: email});
+    } catch (err) {
+        const error = new HttpError(
+            'Signin up failer, please try again later.',
+            500
+        )
+        return next(error);
     }
 
-    let createdUser = {
-        id: uuidv4(),
-        name: name,
-        email: email,
-        password: password
+    if(existingUser) {
+        const error = new HttpError(
+            'User exists already, please login instead.',
+            422
+        )
+        return next(error);
     }
 
-    DUMMY_USERS.push(createdUser);
+    let createdUser = new User({
+        name,
+        email,
+        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Bob_Odenkirk_by_Gage_Skidmore_2.jpg/1200px-Bob_Odenkirk_by_Gage_Skidmore_2.jpg',
+        password,
+        places
+    })
 
-    res.status(201).json({message: `${createdUser.name} was successfully created !`})
+    try {
+        await createdUser.save();
+    } catch (err) {
+        const error = new HttpError(
+            'Signing up failed, please try again.',
+            500
+        );
+        return next(error);
+    }
+
+    res.status(201).json({user: createdUser.toObject({getters: true})});
 }
 
 const logUserIn = (req, res, next) => {
