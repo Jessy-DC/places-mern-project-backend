@@ -1,17 +1,7 @@
-const { v4: uuidv4 } = require('uuid');
 const { validationResult } = require('express-validator')
 
 const HttpError = require('../models/http-error')
 const User = require('../models/user');
-
-const DUMMY_USERS = [
-    {
-        id: 'u1',
-        name: 'Bob Odenkirk',
-        email: 'bob.odenkirk@gmail.com',
-        password: 'PASSWORD'
-    }
-]
 
 const getUsers = async (req, res, next) => {
     let users;
@@ -42,7 +32,7 @@ const createUser = async (req, res, next) => {
         );
     }
 
-    const {name, email, password, places} = req.body;
+    const {name, email, password} = req.body;
 
     let existingUser;
 
@@ -69,7 +59,7 @@ const createUser = async (req, res, next) => {
         email,
         image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Bob_Odenkirk_by_Gage_Skidmore_2.jpg/1200px-Bob_Odenkirk_by_Gage_Skidmore_2.jpg',
         password,
-        places
+        places: []
     })
 
     try {
