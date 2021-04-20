@@ -13,8 +13,20 @@ const DUMMY_USERS = [
     }
 ]
 
-const getUsers = (req, res, next) => {
-    res.json({users: DUMMY_USERS});
+const getUsers = async (req, res, next) => {
+    let users;
+
+    try {
+        users = await User.find({}, '-password'); // -password for exclude password
+    } catch (err) {
+        const error = new HttpError(
+            'Fetching users failed, please try again later.',
+            500
+        );
+        return next(error);
+    }
+
+    res.json({users: users.map(user => user.toObject({getters: true}))});
 }
 
 const createUser = async (req, res, next) => {
@@ -38,7 +50,7 @@ const createUser = async (req, res, next) => {
         existingUser = await User.findOne({email: email});
     } catch (err) {
         const error = new HttpError(
-            'Signin up failer, please try again later.',
+            'Signing up failed, please try again later.',
             500
         )
         return next(error);
@@ -73,17 +85,30 @@ const createUser = async (req, res, next) => {
     res.status(201).json({user: createdUser.toObject({getters: true})});
 }
 
-const logUserIn = (req, res, next) => {
+const logUserIn = async (req, res, next) => {
     const { email, password } = req.body;
-    const identifiedUser = DUMMY_USERS.find(u => {
-        return u.email === email
-    })
 
-    if(!identifiedUser || identifiedUser.password !== password) {
-        throw new HttpError('Could not identify user, credentials seem to be wrong.', 401)
+    let existingUser;
+
+    try {
+        existingUser = await User.findOne({email: email});
+    } catch (err) {
+        const error = new HttpError(
+            'Logging in failed, please try again later.',
+            500
+        )
+        return next(error);
     }
 
-    res.status(200).json({message: `${identifiedUser.name} is log in !`})
+    if (!existingUser || existingUser.password !== password) {
+        const error = new HttpError(
+            'Invalid credentials, could not log you in',
+            401
+        );
+        return next(error);
+    }
+
+    res.status(200).json({message: 'Logged in!'})
 }
 
 exports.getUsers = getUsers;
