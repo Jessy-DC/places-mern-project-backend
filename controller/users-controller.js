@@ -98,7 +98,7 @@ const logUserIn = async (req, res, next) => {
         return next(error);
     }
 
-    res.status(200).json({message: 'Logged in!'})
+    res.status(200).json({message: 'Logged in!', user: existingUser.toObject({getters: true})})
 }
 
 exports.getUsers = getUsers;
