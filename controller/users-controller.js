@@ -57,7 +57,7 @@ const createUser = async (req, res, next) => {
     let createdUser = new User({
         name,
         email,
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Bob_Odenkirk_by_Gage_Skidmore_2.jpg/1200px-Bob_Odenkirk_by_Gage_Skidmore_2.jpg',
+        image: req.file.path,
         password,
         places: []
     })
