@@ -19,7 +19,7 @@ router.post('/signup',
             .isEmail().withMessage('Email must be valid'),
         check('password')
             .isLength({min: 7})
-    ], usersController.createUser);
+    ], usersController.signup);
 
 router.post('/login', usersController.logUserIn)
 
