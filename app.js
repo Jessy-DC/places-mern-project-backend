@@ -10,8 +10,6 @@ const usersRoutes = require('./routes/users-routes')
 
 const app = express();
 
-const {ACCESS_MONGO} = require('./key/key')
-
 app.use(bodyParser.json());
 
 app.use('/uploads/images', express.static(path.join('uploads', 'images')));
